@@ -1,0 +1,133 @@
+{
+  "rabbit_version": "3.13.0",
+  "vhosts": [{"name": "/"}],
+  "exchanges": [
+    {
+      "name": "footballiq.direct",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "footballiq.dead_letter",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "footballiq.inference",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "footballiq.dead_letter",
+        "x-dead-letter-routing-key": "footballiq.inference.dead",
+        "x-message-ttl": 3600000,
+        "x-max-priority": 10
+      }
+    },
+    {
+      "name": "footballiq.stats",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "footballiq.dead_letter",
+        "x-dead-letter-routing-key": "footballiq.stats.dead",
+        "x-message-ttl": 3600000
+      }
+    },
+    {
+      "name": "footballiq.reports",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "footballiq.dead_letter",
+        "x-dead-letter-routing-key": "footballiq.reports.dead",
+        "x-message-ttl": 7200000
+      }
+    },
+    {
+      "name": "footballiq.highlights",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "footballiq.dead_letter",
+        "x-dead-letter-routing-key": "footballiq.highlights.dead",
+        "x-message-ttl": 7200000
+      }
+    },
+    {
+      "name": "footballiq.inference.dead",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "footballiq.stats.dead",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "footballiq.direct",
+      "vhost": "/",
+      "destination": "footballiq.inference",
+      "destination_type": "queue",
+      "routing_key": "inference",
+      "arguments": {}
+    },
+    {
+      "source": "footballiq.direct",
+      "vhost": "/",
+      "destination": "footballiq.stats",
+      "destination_type": "queue",
+      "routing_key": "stats",
+      "arguments": {}
+    },
+    {
+      "source": "footballiq.direct",
+      "vhost": "/",
+      "destination": "footballiq.reports",
+      "destination_type": "queue",
+      "routing_key": "reports",
+      "arguments": {}
+    },
+    {
+      "source": "footballiq.direct",
+      "vhost": "/",
+      "destination": "footballiq.highlights",
+      "destination_type": "queue",
+      "routing_key": "highlights",
+      "arguments": {}
+    }
+  ],
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ]
+}

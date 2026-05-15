@@ -1,0 +1,37 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+.env
+.env.test
+
+# IDEs
+.vscode/
+.idea/
+
+# Database
+postgres_data/
+redis_data/
+rabbitmq_data/
+minio_data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.mp4
+*.mkv
+*.avi
+*.mov
+test_config.py
+check_db.py
+test_env.py
+
+GITHUB_GUIDE.md
+footiq_implementation.md
