@@ -18,7 +18,7 @@
 <br/>
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)](.)
-[![Phase](https://img.shields.io/badge/Phase-2%20of%206-blue?style=flat-square)](.)
+[![Phase](https://img.shields.io/badge/Phase-3%20of%206-blue?style=flat-square)](.)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](.)
 
@@ -44,8 +44,8 @@ No manual tagging. No human annotation. Just upload and analyze.
 |---|---|---|
 | 🔐 JWT Authentication | ✅ Live | Secure register/login, refresh tokens, API keys |
 | 📤 Video Upload | ✅ Live | Chunked upload to MinIO, metadata extraction |
-| 🎯 Player Detection | 🔜 Phase 3 | YOLOv8x — detects players, ball, referees |
-| 🏃 Player Tracking | 🔜 Phase 3 | ByteTrack multi-object tracking across frames |
+| 🎯 Player Detection | ✅ Live | YOLOv8x — detects players, ball, referees |
+| 🏃 Player Tracking | ✅ Live | ByteTrack multi-object tracking across frames |
 | 📊 30+ Statistics | 🔜 Phase 4 | Possession, speed, xG, passes, formations... |
 | 📡 Live WebSockets | 🔜 Phase 5 | Stream stats in real-time during live matches |
 | 📄 PDF Reports | 🔜 Phase 6 | Auto-generated professional match reports |
@@ -256,7 +256,7 @@ GET /health
 Phase 0  ██████████ 100%  Infrastructure (Docker, PostgreSQL, Redis, RabbitMQ, MinIO)
 Phase 1  ██████████ 100%  Authentication (JWT, API Keys, Redis blacklisting)
 Phase 2  ██████████ 100%  Match Ingestion (Upload, MinIO, FFprobe, RabbitMQ dispatch)
-Phase 3  ░░░░░░░░░░   0%  Inference Worker (YOLOv8x + ByteTrack)
+Phase 3  ██████████ 100%  Inference Worker (YOLOv8x + ByteTrack)
 Phase 4  ░░░░░░░░░░   0%  Stats Engine (Possession, xG, Heatmaps, Formations)
 Phase 5  ░░░░░░░░░░   0%  Real-time WebSockets
 Phase 6  ░░░░░░░░░░   0%  PDF Reports & AI Commentary

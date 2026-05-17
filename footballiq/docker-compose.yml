@@ -126,6 +126,26 @@ services:
       --reload
       --log-level debug
 
+  inference:
+    build:
+      context: ./services/inference
+      dockerfile: Dockerfile
+    container_name: footballiq_inference
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./services/inference:/app
+      - ./shared:/app/shared
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    command: >
+      python worker/main.py
+
 volumes:
   postgres_data:
   redis_data:
