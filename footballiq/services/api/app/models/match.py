@@ -66,3 +66,4 @@ class Match(Base):
     completed_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     user: Mapped["User"] = relationship("User", back_populates="matches")
+    frames: Mapped[list["Frame"]] = relationship("Frame", back_populates="match", cascade="all, delete-orphan")

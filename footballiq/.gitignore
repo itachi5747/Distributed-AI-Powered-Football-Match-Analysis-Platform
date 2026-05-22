@@ -24,6 +24,21 @@ minio_data/
 .DS_Store
 Thumbs.db
 
+# ML model weights
+*.pt
+*.pth
+*.ckpt
+*.engine
+*.trt
+*.onnx
+services/models/
+models/
+services/inference/models/
+services/inference/runs/
+services/inference/output/
+services/inference/outputs/
+services/inference/tmp/
+
 # Project specific
 *.mp4
 *.mkv
@@ -32,6 +47,13 @@ Thumbs.db
 test_config.py
 check_db.py
 test_env.py
+test_video.mp4
 
+# Docs not for repo
 GITHUB_GUIDE.md
 footiq_implementation.md
+project_description.md
+
+# Agent / tool dirs
+.agents/
+.codex/

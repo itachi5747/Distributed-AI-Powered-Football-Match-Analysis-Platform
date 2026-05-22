@@ -50,6 +50,10 @@ async def consume_queue(
                 try:
                     payload = json.loads(message.body.decode())
                     await on_message(payload)
+                except aiormq.exceptions.ChannelInvalidStateError:
+                    # Channel already closed (normal after graceful shutdown)
+                    # Silently ignore to let the worker exit cleanly.
+                    pass
                 except Exception as exc:
                     print(f"[ERROR] Failed to process message: {exc}")
                     raise

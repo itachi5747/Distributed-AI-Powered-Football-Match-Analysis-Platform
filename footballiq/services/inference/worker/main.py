@@ -1,12 +1,22 @@
-import asyncio
+import sys
 import os
+
+# Dynamically add paths for imports when running locally
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "services", "api")))
+
+import asyncio
 import tempfile
+import uuid
 from datetime import datetime
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+from app.models import Frame, FrameDetection
 
 
 import cv2
@@ -190,16 +200,22 @@ async def process_match(job: InferenceJobMessage) -> None:
                 else None
             )
 
-            detections = []
-            if tracked.tracker_id is not None and tracked.class_id is not None:
+            # Prepare detections list for this frame
+            detections: list[DetectionObject] = []
+            # Ensure tracker returned data with matching lengths
+            if (tracked.tracker_id is not None and tracked.class_id is not None and
+                len(tracked.tracker_id) > 0 and len(tracked.class_id) > 0 and
+                hasattr(tracked, "xyxy") and len(tracked.xyxy) > 0):
                 h, w = frame.shape[:2]
-                for i, bbox in enumerate(tracked.xyxy):
+                # Use the minimum length among the arrays to avoid out‑of‑bounds errors
+                max_len = min(len(tracked.tracker_id), len(tracked.class_id), len(tracked.xyxy))
+                for i in range(max_len):
+                    bbox = tracked.xyxy[i]
                     class_id = int(tracked.class_id[i])
                     if class_id not in CLASS_LABEL_MAP:
                         continue
-
                     track_id = int(tracked.tracker_id[i])
-                    conf = float(tracked.confidence[i])
+                    conf = float(tracked.confidence[i]) if hasattr(tracked, "confidence") and len(tracked.confidence) > i else 0.0
                     cx = float((bbox[0] + bbox[2]) / 2)
                     cy = float((bbox[1] + bbox[3]) / 2)
 
@@ -221,7 +237,7 @@ async def process_match(job: InferenceJobMessage) -> None:
                             position_m=Point2D(x=pos_m[0], y=pos_m[1]) if pos_m else None,
                         )
                     )
-
+            # Build the frame message (even if detections list is empty)
             frame_msg = FrameMessage(
                 match_id=match_id,
                 frame_number=frame_number,
@@ -230,9 +246,48 @@ async def process_match(job: InferenceJobMessage) -> None:
                 ball_position_px=(
                     Point2D(x=ball_smoothed_px[0], y=ball_smoothed_px[1]) if ball_smoothed_px else None
                 ),
-                ball_position_m=(Point2D(x=ball_smoothed_m[0], y=ball_smoothed_m[1]) if ball_smoothed_m else None),
+                ball_position_m=(
+                    Point2D(x=ball_smoothed_m[0], y=ball_smoothed_m[1]) if ball_smoothed_m else None
+                ),
                 homography_matrix=homography.to_flat_list(),
             )
+
+            # Save frame and detections to PostgreSQL
+            async with AsyncSession() as session:
+                # Create frame record
+                frame_record = Frame(
+                    match_id=uuid.UUID(match_id),
+                    frame_number=frame_number,
+                    timestamp_ms=timestamp_ms
+                )
+                session.add(frame_record)
+                await session.flush()  # Get frame_record.id
+
+                # Create detection records
+                detection_records = []
+                for det in detections:
+                    detection_record = FrameDetection(
+                        frame_id=frame_record.id,
+                        track_id=det.track_id,
+                        class_label=det.class_label.value,
+                        team=det.team.value if det.team else None,
+                        bbox_norm=list(det.bbox_norm),
+                        bbox_px=[int(v) for v in det.bbox_px],
+                        confidence=det.confidence,
+                        position_px_x=det.position_px.x if det.position_px else None,
+                        position_px_y=det.position_px.y if det.position_px else None,
+                        position_m_x=det.position_m.x if det.position_m else None,
+                        position_m_y=det.position_m.y if det.position_m else None,
+                        speed_kmh=det.speed_kmh,
+                        acceleration_ms2=det.acceleration_ms2,
+                        action=det.action.value if det.action else None,
+                        jersey_color_hsv=list(det.jersey_color_hsv) if det.jersey_color_hsv else None
+                    )
+                    detection_records.append(detection_record)
+
+                session.add_all(detection_records)
+                await session.commit()
+
             await publish_message("stats", frame_msg)
 
             processed += 1
